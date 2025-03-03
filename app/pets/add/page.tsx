@@ -19,34 +19,38 @@ export default function AddPetPage() {
       rabies: false,
       distemper: false,
       parvo: false,
-      other: false
-    }
+      other: false,
+    },
   });
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       vaccinations: {
         ...prev.vaccinations,
-        [name]: checked
-      }
+        [name]: checked,
+      },
     }));
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically send the data to your backend
     console.log('Pet data submitted:', formData);
-    
+
     // Redirect to pets page after submission
     router.push('/pets');
   };
@@ -54,16 +58,19 @@ export default function AddPetPage() {
   return (
     <>
       <Navbar />
-      
+
       <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
         <div className="max-w-3xl mx-auto px-6">
           <h1 className="text-3xl font-bold mb-8">Register a New Pet</h1>
-          
+
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-8">
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Pet Name *
                   </label>
                   <input
@@ -76,9 +83,12 @@ export default function AddPetPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="type"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Pet Type *
                   </label>
                   <select
@@ -98,9 +108,12 @@ export default function AddPetPage() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="breed" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="breed"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Breed
                   </label>
                   <input
@@ -112,9 +125,12 @@ export default function AddPetPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="age"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Age (years) *
                   </label>
                   <input
@@ -129,9 +145,12 @@ export default function AddPetPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="gender"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Gender
                   </label>
                   <select
@@ -146,9 +165,12 @@ export default function AddPetPage() {
                     <option value="Unknown">Unknown</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="weight" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label
+                    htmlFor="weight"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
                     Weight (kg)
                   </label>
                   <input
@@ -163,9 +185,12 @@ export default function AddPetPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="mb-6">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
                   Description
                 </label>
                 <textarea
@@ -178,7 +203,7 @@ export default function AddPetPage() {
                   placeholder="Tell us about your pet's personality, likes, dislikes, etc."
                 ></textarea>
               </div>
-              
+
               <div className="mb-8">
                 <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Vaccinations
@@ -193,7 +218,10 @@ export default function AddPetPage() {
                       onChange={handleCheckboxChange}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="rabies" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="rabies"
+                      className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
                       Rabies
                     </label>
                   </div>
@@ -206,7 +234,10 @@ export default function AddPetPage() {
                       onChange={handleCheckboxChange}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="distemper" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="distemper"
+                      className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
                       Distemper
                     </label>
                   </div>
@@ -219,7 +250,10 @@ export default function AddPetPage() {
                       onChange={handleCheckboxChange}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="parvo" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="parvo"
+                      className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
                       Parvovirus
                     </label>
                   </div>
@@ -232,13 +266,16 @@ export default function AddPetPage() {
                       onChange={handleCheckboxChange}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="other" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="other"
+                      className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
                       Other
                     </label>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
@@ -258,7 +295,7 @@ export default function AddPetPage() {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </>
   );
