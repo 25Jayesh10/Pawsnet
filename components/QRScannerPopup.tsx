@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import QrReader from 'react-qr-scanner';
+import { QrReader } from 'react-qr-reader';
 import { FaTimes, FaQrcode } from 'react-icons/fa';
 
 interface QRScannerPopupProps {
@@ -55,13 +55,22 @@ export default function QRScannerPopup({
 
         <div className="mb-4">
           <div className="relative overflow-hidden rounded-lg">
-            <QrReader
-              delay={500}
-              constraints={{ facingMode: 'environment' }}
-              onScan={handleScan}
-              onError={handleError}
-              className="w-full"
-            />
+          <QrReader
+            constraints={{ facingMode: "environment" }}
+            onResult={(result, error) => {
+              if (result) {
+                const scannedData = result?.getText();
+                setScanResult(scannedData);
+                onScan(scannedData);
+              }
+              if (error) {
+                console.error(error);
+                setError("Error accessing camera. Please ensure you granted camera permissions.");
+              }
+            }}
+            className="w-full"
+          />
+
 
             <div className="absolute inset-0 border-2 border-indigo-500 pointer-events-none"></div>
           </div>
