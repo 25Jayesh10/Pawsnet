@@ -30,7 +30,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 ALLOWED_HOSTS = [
-    'pawsnet.onrender.com',  # Add your Render domain
+    'pawsnet-backend.onrender.com',  # Add your Render domain
     'localhost',
     '127.0.0.1'
 ]  
