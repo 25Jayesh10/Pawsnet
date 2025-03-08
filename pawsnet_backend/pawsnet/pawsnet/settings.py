@@ -34,7 +34,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1'
 ]  
-
+#hi 
 #Domain url: https://pawsnet.onrender.com
 
 #Frontend url: https://pawsnet-aemb.onrender.com/dashboard
