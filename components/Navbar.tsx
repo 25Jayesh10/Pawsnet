@@ -75,6 +75,7 @@ export default function Navbar() {
                 layout="fill"
                 objectFit="cover"
                 className="rounded-full"
+                unoptimized
               />
             </div>
             <span className="text-xl font-bold text-indigo-600">Paswnet</span>

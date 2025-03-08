@@ -154,6 +154,7 @@ export default function ServicesPage() {
                       layout="fill"
                       objectFit="cover"
                       className="rounded-full"
+                      unoptimized
                     />
                   </div>
                 </div>
