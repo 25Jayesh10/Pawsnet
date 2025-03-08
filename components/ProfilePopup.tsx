@@ -39,6 +39,7 @@ export default function ProfilePopup({ onClose }: ProfilePopupProps) {
               layout="fill"
               objectFit="cover"
               className="rounded-full"
+              unoptimized
             />
           </div>
           <h3 className="text-xl font-semibold">{user.name}</h3>
