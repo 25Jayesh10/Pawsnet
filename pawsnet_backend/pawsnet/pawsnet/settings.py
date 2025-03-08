@@ -23,14 +23,25 @@ DATABASE_URL = "postgresql://neondb_owner:npg_8YoWkKhgw1CZ@ep-holy-heart-a87xq72
 SECRET_KEY = 'django-insecure-a-yjipcp$zq$9(2h+cc0u+(7(n16m6fzgml8+@zj3jmp3q&q4c'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.onrender\.com$",  # Allow any subdomain on Render
+]
 
 ALLOWED_HOSTS = [
-    'pawsnet.onrender.com',  # Add your Render domain
+    'pawsnet-backend.onrender.com',  # Add your Render domain
     'localhost',
     '127.0.0.1'
 ]  
 
+#Domain url: https://pawsnet.onrender.com
+
+#Frontend url: https://pawsnet-aemb.onrender.com/dashboard
+CORS_ALLOWED_ORIGINS = [
+    "https://pawsnet-aemb.onrender.com/dashboard",  # Next.js frontend on Render
+    "https://pawsnet.onrender.com",  # Django backend on Render
+]
 
 # Application definition
 
@@ -42,10 +53,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'pawsnet',
+    
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
