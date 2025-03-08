@@ -25,6 +25,10 @@ SECRET_KEY = 'django-insecure-a-yjipcp$zq$9(2h+cc0u+(7(n16m6fzgml8+@zj3jmp3q&q4c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.onrender\.com$",  # Allow any subdomain on Render
+]
+
 ALLOWED_HOSTS = [
     'pawsnet.onrender.com',  # Add your Render domain
     'localhost',
