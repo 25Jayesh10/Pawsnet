@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'pawsnet',
-    
+    'pets',
 ]
 
 MIDDLEWARE = [

@@ -46,14 +46,29 @@ export default function AddPetPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log('Pet data submitted:', formData);
-
-    // Redirect to pets page after submission
-    router.push('/pets');
+  
+    try {
+      const response = await fetch("https://pawsnet-backend.onrender.com/api/register-pet/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (response.ok) {
+        console.log("Pet registered successfully");
+        router.push("/pets");
+      } else {
+        console.error("Failed to register pet");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
+  
 
   return (
     <>
