@@ -40,6 +40,7 @@ ALLOWED_HOSTS = [
 #Frontend url: https://pawsnet-aemb.onrender.com/dashboard
 CORS_ALLOWED_ORIGINS = [
     "https://pawsnet-aemb.onrender.com",  # Next.js frontend on Render
+    "https://pawsnet.vercel.app", # Next.js frontend on Vercel
     "https://pawsnet.onrender.com",  # Django backend on Render
 ]
 
