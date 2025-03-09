@@ -57,7 +57,7 @@ export default function AddPetPage() {
         },
         body: JSON.stringify(formData),
       });
-  
+
       if (response.ok) {
         console.log("Pet registered successfully");
         router.push("/pets");
