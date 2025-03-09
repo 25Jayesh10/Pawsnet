@@ -19,6 +19,6 @@ data = {
 }
 
 # Send request
-response = requests.post('http://localhost:8000/api/register-pet/', json=data)
+response = requests.post('https://pawsnet-backend.onrender.com/api/register-pet/', json=data)
 print(response.status_code)
 print(response.json())

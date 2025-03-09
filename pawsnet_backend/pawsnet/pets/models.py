@@ -27,6 +27,7 @@ class Pet(models.Model):
     
     # Vaccinations stored as a JSON field
     vaccinations = models.JSONField(default=dict)
-
+    image = models.BinaryField(blank=True, null=True)
+    
     def __str__(self):
         return f"{self.name} ({self.type})"
