@@ -18,6 +18,7 @@ export default function Home() {
               width={400} 
               height={300}
               className="rounded-lg mx-auto"
+              unoptimized
             />
           </div>
           

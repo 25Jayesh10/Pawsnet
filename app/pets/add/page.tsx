@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function AddPetPage() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function AddPetPage() {
       parvo: false,
       other: false,
     },
+    image: null as File | null, // Add image property
   });
 
   const handleChange = (
@@ -46,14 +48,91 @@ export default function AddPetPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log('Pet data submitted:', formData);
-
-    // Redirect to pets page after submission
-    router.push('/pets');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+  
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        image: file,
+      }));
+    }
   };
+  
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      let imageUrl = null;
+
+      // Upload image if one was selected
+      if (formData.image) {
+        // Validate file size (max 5MB)
+        if (formData.image.size > 5 * 1024 * 1024) {
+          alert('Image size must be less than 5MB');
+          return;
+        }
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(formData.image.type)) {
+          alert('Please upload a valid image file (JPEG, PNG, or WebP)');
+          return;
+        }
+
+        const fileExt = formData.image.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+        // Upload the image
+        const { error: uploadError } = await supabase.storage
+          .from('pet-images')
+          .upload(`public/${fileName}`, formData.image, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Image upload error:', uploadError);
+          throw new Error('Failed to upload image');
+        }
+
+        // Get the public URL
+        const { data } = supabase.storage
+          .from('pet-images')
+          .getPublicUrl(`public/${fileName}`);
+        
+        imageUrl = data.publicUrl;
+      }
+
+      // Insert the pet data into the database
+      const { error: insertError } = await supabase
+        .from('pets')
+        .insert([{
+          name: formData.name,
+          type: formData.type,
+          breed: formData.breed,
+          age: Number(formData.age),
+          gender: formData.gender,
+          weight: formData.weight ? Number(formData.weight) : null,
+          description: formData.description,
+          vaccinations: formData.vaccinations,
+          image_url: imageUrl,
+        }]);
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw new Error('Failed to save pet information');
+      }
+
+      router.push('/pets');
+
+    } catch (error) {
+      console.error('Error details:', error);
+      alert(error instanceof Error ? error.message : 'Failed to register pet. Please try again.');
+    }
+  };
+  
 
   return (
     <>
@@ -184,6 +263,24 @@ export default function AddPetPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
+
+                {/* Add separate div for image upload */}
+                <div>
+                  <label
+                    htmlFor="image"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Pet Image
+                  </label>
+                  <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
               </div>
 
               <div className="mb-6">
@@ -285,6 +382,7 @@ export default function AddPetPage() {
                   Cancel
                 </button>
                 <button
+                  
                   type="submit"
                   className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
                 >

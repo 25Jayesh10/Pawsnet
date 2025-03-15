@@ -9,167 +9,83 @@ import ProfilePopup from './ProfilePopup';
 import QRScannerPopup from './QRScannerPopup';
 
 export default function Navbar() {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [activePopup, setActivePopup] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(3);
 
   useEffect(() => {
-    // Load notification count from localStorage
     const storedCount = localStorage.getItem('notificationCount');
-    if (storedCount) {
-      setNotificationCount(parseInt(storedCount));
-    } else {
-      // Default count if none exists
-      setNotificationCount(3);
-      localStorage.setItem('notificationCount', '3');
-    }
+    if (storedCount) setNotificationCount(parseInt(storedCount));
+    localStorage.setItem('notificationCount', notificationCount.toString());
 
-    // Set up event listener for storage changes
     const handleStorageChange = () => {
       const updatedCount = localStorage.getItem('notificationCount');
-      if (updatedCount) {
-        setNotificationCount(parseInt(updatedCount));
-      }
+      if (updatedCount) setNotificationCount(parseInt(updatedCount));
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
-    // Also check for changes every 2 seconds (for same-tab updates)
-    const interval = setInterval(() => {
-      const updatedCount = localStorage.getItem('notificationCount');
-      if (updatedCount) {
-        setNotificationCount(parseInt(updatedCount));
-      }
-    }, 2000);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [notificationCount]);
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
-
-  const handleQRScan = (result: string) => {
-    setScanResult(result);
-    // You can add additional logic here to handle the QR code result
-    console.log('QR Code scanned:', result);
-  };
-
-  const handleNotificationClick = () => {
-    setShowNotifications(!showNotifications);
-    if (showProfile) setShowProfile(false);
-    if (showQRScanner) setShowQRScanner(false);
+  const togglePopup = (popup: string) => {
+    setActivePopup((prev) => (prev === popup ? null : popup));
   };
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-md py-4 px-6">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <Link href="/dashboard" className="flex items-center">
-            <div className="relative h-10 w-10 mr-2">
-              <Image
-                src="https://images.unsplash.com/photo-1560807707-8cc77767d783"
-                alt="Paswnet Logo"
-                layout="fill"
-                objectFit="cover"
-                className="rounded-full"
-              />
-            </div>
-            <span className="text-xl font-bold text-indigo-600">Paswnet</span>
-          </Link>
-        </div>
+        <Link href="/dashboard" className="flex items-center">
+          <div className="relative h-10 w-10 mr-2">
+            <Image
+              src="https://images.unsplash.com/photo-1560807707-8cc77767d783"
+              alt="Paswnet Logo"
+              layout="fill"
+              objectFit="cover"
+              className="rounded-full"
+              unoptimized
+            />
+          </div>
+          <span className="text-xl font-bold text-indigo-600">Paswnet</span>
+        </Link>
 
-        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
-          <Link
-            href="/dashboard"
-            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/pets"
-            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            My Pets
-          </Link>
-          <Link
-            href="/community"
-            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Community
-          </Link>
-          <Link
-            href="/services"
-            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Services
-          </Link>
+          {['Dashboard', 'My Pets', 'Community', 'Services'].map((item) => (
+            <Link
+              key={item}
+              href={`/${item.toLowerCase().replace(' ', '')}`}
+              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              {item}
+            </Link>
+          ))}
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* QR Scanner Button */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowQRScanner(!showQRScanner);
-                if (showNotifications) setShowNotifications(false);
-                if (showProfile) setShowProfile(false);
-              }}
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 p-2"
-              aria-label="Scan QR Code"
-            >
-              <FaQrcode size={20} />
-            </button>
-
-            {showQRScanner && (
-              <QRScannerPopup
-                onClose={() => setShowQRScanner(false)}
-                onScan={handleQRScan}
-              />
-            )}
-          </div>
-
-          {/* Notifications Button */}
-          <div className="relative">
-            <button
-              onClick={handleNotificationClick}
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 p-2"
-              aria-label="Notifications"
-            >
-              <FaBell size={20} />
-              {notificationCount > 0 && (
-                <span className="notification-badge">{notificationCount}</span>
+          {[
+            { icon: <FaQrcode size={20} />, popup: 'QRScanner', component: QRScannerPopup },
+            { icon: <FaBell size={20} />, popup: 'Notifications', component: NotificationPopup },
+            { icon: <FaUser size={20} />, popup: 'Profile', component: ProfilePopup },
+          ].map(({ icon, popup, component: Component }) => (
+            <div key={popup} className="relative">
+              <button
+                onClick={() => togglePopup(popup)}
+                className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 p-2"
+              >
+                {icon}
+                {popup === 'Notifications' && notificationCount > 0 && (
+                  <span className="notification-badge">{notificationCount}</span>
+                )}
+              </button>
+              {activePopup === popup && (
+                <Component
+                  onClose={() => setActivePopup(null)}
+                  onScan={(result: string) => setScanResult(result)}
+                />
               )}
-            </button>
+            </div>
+          ))}
 
-            {showNotifications && (
-              <NotificationPopup onClose={() => setShowNotifications(false)} />
-            )}
-          </div>
-
-          {/* Profile Button */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowProfile(!showProfile);
-                if (showNotifications) setShowNotifications(false);
-                if (showQRScanner) setShowQRScanner(false);
-              }}
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 p-2"
-              aria-label="User Profile"
-            >
-              <FaUser size={20} />
-            </button>
-
-            {showProfile && (
-              <ProfilePopup onClose={() => setShowProfile(false)} />
-            )}
-          </div>
-
-          {/* Mobile menu button */}
           <button
             className="md:hidden text-gray-700 dark:text-gray-200 p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -180,43 +96,23 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col space-y-4 px-4">
-            <Link
-              href="/dashboard"
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/pets"
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              My Pets
-            </Link>
-            <Link
-              href="/community"
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Community
-            </Link>
-            <Link
-              href="/services"
-              className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Services
-            </Link>
+            {['Dashboard', 'My Pets', 'Community', 'Services'].map((item) => (
+              <Link
+                key={item}
+                href={`/${item.toLowerCase().replace(' ', '')}`}
+                className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item}
+              </Link>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Display scan result if available */}
       {scanResult && (
         <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-xs z-50">
           <div className="flex justify-between items-center mb-2">

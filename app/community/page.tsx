@@ -167,6 +167,7 @@ export default function CommunityPage() {
                       alt={event.title}
                       layout="fill"
                       objectFit="cover"
+                      unoptimized
                     />
                   </div>
                   <div className="p-6">
@@ -234,6 +235,7 @@ export default function CommunityPage() {
                       layout="fill"
                       objectFit="cover"
                       className="rounded-full"
+                      unoptimized
                     />
                   </div>
                   <h3 className="text-lg font-semibold mb-1">{member.name}</h3>

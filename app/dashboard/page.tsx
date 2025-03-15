@@ -99,6 +99,7 @@ export default function Dashboard() {
                   layout="fill"
                   objectFit="cover"
                   className="rounded-lg"
+                  unoptimized
                 />
               </div>
             </div>
@@ -179,6 +180,7 @@ export default function Dashboard() {
                     alt="Stray animal"
                     layout="fill"
                     objectFit="cover"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                     <div className="p-6 text-white">
@@ -219,6 +221,7 @@ export default function Dashboard() {
                     alt="Lost pet"
                     layout="fill"
                     objectFit="cover"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                     <div className="p-6 text-white">
@@ -280,6 +283,7 @@ export default function Dashboard() {
                       alt={pet.name}
                       layout="fill"
                       objectFit="cover"
+                      unoptimized
                     />
                   </div>
                   <div className="p-4">
@@ -336,6 +340,7 @@ export default function Dashboard() {
                           layout="fill"
                           objectFit="cover"
                           className="rounded-full"
+                          unoptimized
                         />
                       </div>
                       <div>
