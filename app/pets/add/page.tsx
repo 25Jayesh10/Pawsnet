@@ -62,50 +62,43 @@ export default function AddPetPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     try {
+      const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+
       let imageUrl = null;
 
-      // Upload image if one was selected
       if (formData.image) {
-        // Validate file size (max 5MB)
         if (formData.image.size > 5 * 1024 * 1024) {
           alert('Image size must be less than 5MB');
-          return;
-        }
-
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!allowedTypes.includes(formData.image.type)) {
-          alert('Please upload a valid image file (JPEG, PNG, or WebP)');
           return;
         }
 
         const fileExt = formData.image.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-        // Upload the image
-        const { error: uploadError } = await supabase.storage
+        // Modified storage path - removed 'public/' prefix
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('pet-images')
-          .upload(`public/${fileName}`, formData.image, {
+          .upload(fileName, formData.image, {
             cacheControl: '3600',
             upsert: false
           });
 
         if (uploadError) {
-          console.error('Image upload error:', uploadError);
-          throw new Error('Failed to upload image');
+          console.error('Upload error:', uploadError);
+          throw new Error(`Image upload failed: ${uploadError.message}`);
         }
 
-        // Get the public URL
-        const { data } = supabase.storage
+        const { data: urlData } = supabase.storage
           .from('pet-images')
-          .getPublicUrl(`public/${fileName}`);
+          .getPublicUrl(fileName);
         
-        imageUrl = data.publicUrl;
+        imageUrl = urlData.publicUrl;
       }
 
-      // Insert the pet data into the database
       const { error: insertError } = await supabase
         .from('pets')
         .insert([{
@@ -121,8 +114,8 @@ export default function AddPetPage() {
         }]);
 
       if (insertError) {
-        console.error('Database insert error:', insertError);
-        throw new Error('Failed to save pet information');
+        console.error('Insert error:', insertError);
+        throw new Error(`Failed to save pet information: ${insertError.message}`);
       }
 
       router.push('/pets');
@@ -130,6 +123,10 @@ export default function AddPetPage() {
     } catch (error) {
       console.error('Error details:', error);
       alert(error instanceof Error ? error.message : 'Failed to register pet. Please try again.');
+    } finally {
+      const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitButton.disabled = false;
+      submitButton.textContent = 'Register Pet';
     }
   };
   
