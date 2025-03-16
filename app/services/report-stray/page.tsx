@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { FaMapMarkerAlt, FaCalendarAlt, FaCamera, FaExclamationTriangle } from 'react-icons/fa';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function ReportStrayPage() {
   const router = useRouter();
@@ -37,16 +38,30 @@ export default function ReportStrayPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      // In a real app, you would send this data to your backend
-      console.log('Stray animal report submitted:', formData);
-      
-      // Add to local storage to simulate database
+  
+    try {
+      const { error } = await supabase
+        .from('stray_reports')
+        .insert([{
+          animal_type: formData.animalType,
+          animal_description: formData.animalDescription,
+          condition: formData.condition,
+          sighting_date: formData.sightingDate,
+          sighting_time: formData.sightingTime || null,
+          location: formData.location,
+          additional_info: formData.additionalInfo,
+          urgency_level: formData.urgencyLevel,
+          contact_name: formData.contactName,
+          contact_phone: formData.contactPhone,
+          contact_email: formData.contactEmail || null
+        }]);
+  
+      if (error) throw error;
+  
+      // Add to notifications
       const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
       const newNotification = {
         id: Date.now(),
@@ -61,18 +76,23 @@ export default function ReportStrayPage() {
       notifications.unshift(newNotification);
       localStorage.setItem('notifications', JSON.stringify(notifications));
       
-      // Update notification count in local storage
+      // Update notification count
       const count = parseInt(localStorage.getItem('notificationCount') || '0') + 1;
       localStorage.setItem('notificationCount', count.toString());
       
-      setIsSubmitting(false);
       setSubmitSuccess(true);
       
-      // Redirect after 2 seconds
+      // Redirect after success
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
-    }, 1500);
+  
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
