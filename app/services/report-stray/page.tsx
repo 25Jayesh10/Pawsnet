@@ -21,10 +21,25 @@ export default function ReportStrayPage() {
     contactName: '',
     contactPhone: '',
     contactEmail: '',
+    imageFile: null as File | null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size must be less than 10MB');
+        return;
+      }
+      setFormData(prev => ({
+        ...prev,
+        imageFile: file
+      }));
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -39,26 +54,52 @@ export default function ReportStrayPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-  
-    try {
-      const { error } = await supabase
-        .from('stray_reports')
-        .insert([{
-          animal_type: formData.animalType,
-          animal_description: formData.animalDescription,
-          condition: formData.condition,
-          sighting_date: formData.sightingDate,
-          sighting_time: formData.sightingTime || null,
-          location: formData.location,
-          additional_info: formData.additionalInfo,
-          urgency_level: formData.urgencyLevel,
-          contact_name: formData.contactName,
-          contact_phone: formData.contactPhone,
-          contact_email: formData.contactEmail || null
-        }]);
-  
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    let imageUrl = null;
+
+    // Upload image if exists
+    if (formData.imageFile) {
+      const fileExt = formData.imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('stray-images')
+        .upload(fileName, formData.imageFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('stray-images')
+        .getPublicUrl(fileName);
+
+      imageUrl = publicUrl;
+    }
+
+    // Insert report with image URL
+    const { error } = await supabase
+      .from('stray_reports')
+      .insert([{
+        animal_type: formData.animalType,
+        animal_description: formData.animalDescription,
+        condition: formData.condition,
+        sighting_date: formData.sightingDate,
+        sighting_time: formData.sightingTime || null,
+        location: formData.location,
+        additional_info: formData.additionalInfo,
+        urgency_level: formData.urgencyLevel,
+        contact_name: formData.contactName,
+        contact_phone: formData.contactPhone,
+        contact_email: formData.contactEmail || null,
+        image_url: imageUrl
+      }]);
+
       if (error) throw error;
   
       // Add to notifications
@@ -271,6 +312,7 @@ export default function ReportStrayPage() {
                     <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
                       Additional Information
                     </h2>
+                  </div>
                     
                     <div className="mb-6">
                       <label
@@ -313,26 +355,37 @@ export default function ReportStrayPage() {
                     </div>
 
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Upload Photo (if available)
-                      </label>
-                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg">
-                        <div className="space-y-1 text-center">
-                          <FaCamera className="mx-auto h-12 w-12 text-gray-400" />
-                          <div className="flex text-sm text-gray-600 dark:text-gray-400">
-                            <label
-                              htmlFor="file-upload"
-                              className="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none"
-                            >
-                              <span>Upload a file</span>
-                              <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                            </label>
-                            <p className="pl-1">or drag and drop</p>
-                          </div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            PNG, JPG, GIF up to 10MB
-                          </p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Upload Photo (if available)
+                    </label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg">
+                      <div className="space-y-1 text-center">
+                        <FaCamera className="mx-auto h-12 w-12 text-gray-400" />
+                        <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                          <label
+                            htmlFor="file-upload"
+                            className="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none"
+                          >
+                            <span>Upload a file</span>
+                            <input 
+                              id="file-upload" 
+                              name="file-upload" 
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="sr-only" 
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
                         </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG, GIF up to 10MB
+                        </p>
+                        {formData.imageFile && (
+                          <p className="text-sm text-green-600">
+                            Selected: {formData.imageFile.name}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
