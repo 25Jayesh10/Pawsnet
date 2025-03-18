@@ -1,7 +1,11 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { supabase } from '@/lib/supabaseClient';
 import {
   FaPaw,
   FaCoins,
@@ -10,7 +14,43 @@ import {
   FaSearch,
 } from 'react-icons/fa';
 
+interface Pet {
+  id: number;
+  name: string;
+  type: string;
+  breed: string;
+  age: number;
+  image_url: string;
+}
+
 export default function Dashboard() {
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPets() {
+      try {
+        const { data, error } = await supabase
+          .from('pets')
+          .select('*');
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setPets(data);
+        }
+      } catch (error) {
+        console.error('Error fetching pets:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPets();
+  }, []);
+
   // Mock data
   const communityStats = {
     servicesDone: 12,
@@ -18,24 +58,24 @@ export default function Dashboard() {
     coinsEarned: 350,
   };
 
-  const userPets = [
-    {
-      id: 1,
-      name: 'Max',
-      type: 'Dog',
-      breed: 'Golden Retriever',
-      age: 3,
-      image: 'https://images.unsplash.com/photo-1552053831-71594a27632d',
-    },
-    {
-      id: 2,
-      name: 'Luna',
-      type: 'Cat',
-      breed: 'Siamese',
-      age: 2,
-      image: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6',
-    },
-  ];
+  // const userPets = [
+  //   {
+  //     id: 1,
+  //     name: 'Max',
+  //     type: 'Dog',
+  //     breed: 'Golden Retriever',
+  //     age: 3,
+  //     image: 'https://images.unsplash.com/photo-1552053831-71594a27632d',
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Luna',
+  //     type: 'Cat',
+  //     breed: 'Siamese',
+  //     age: 2,
+  //     image: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6',
+  //   },
+  // ];
 
   const reviews = [
     {
@@ -258,64 +298,86 @@ export default function Dashboard() {
         </section>
 
         {/* My Pets Section */}
-        <section className="py-12">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">My Pets</h2>
-              <Link
-                href="/pets/add"
-                className="flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                <FaPlus className="mr-2" />
-                Add Pet
-              </Link>
-            </div>
+<section className="py-12">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="flex justify-between items-center mb-8">
+      <h2 className="text-2xl font-bold">My Pets</h2>
+      <Link
+        href="/pets/add"
+        className="flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
+      >
+        <FaPlus className="mr-2" />
+        Add Pet
+      </Link>
+    </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userPets.map((pet) => (
-                <div
-                  key={pet.id}
-                  className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden"
-                >
-                  <div className="relative h-48 w-full">
-                    <Image
-                      src={pet.image}
-                      alt={pet.name}
-                      layout="fill"
-                      objectFit="cover"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold mb-1">{pet.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-3">
-                      {pet.type} • {pet.breed} • {pet.age} years old
-                    </p>
-                    <Link
-                      href={`/pets/${pet.id}`}
-                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
-              ))}
-
-              <div className="bg-gray-50 dark:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg flex flex-col items-center justify-center p-6">
-                <FaPaw className="text-gray-400 dark:text-gray-400 text-4xl mb-3" />
-                <p className="text-gray-500 dark:text-gray-300 text-center mb-4">
-                  Add another pet to your family
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {loading ? (
+        <div className="col-span-3 text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading pets...</p>
+        </div>
+      ) : pets.length > 0 ? (
+        <>
+          {pets.map((pet) => (
+            <div
+              key={pet.id}
+              className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden"
+            >
+              <div className="relative h-48 w-full">
+                <Image
+                  src={pet.image_url || '/placeholder-pet.jpg'}
+                  alt={pet.name}
+                  layout="fill"
+                  objectFit="cover"
+                  unoptimized
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-xl font-semibold mb-1">{pet.name}</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-3">
+                  {pet.type} • {pet.breed} • {pet.age} years old
                 </p>
                 <Link
-                  href="/pets/add"
+                  href={`/pets/${pet.id}`}
                   className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
                 >
-                  Register a Pet
+                  View Details
                 </Link>
               </div>
             </div>
+          ))}
+
+          <div className="bg-gray-50 dark:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg flex flex-col items-center justify-center p-6">
+            <FaPaw className="text-gray-400 dark:text-gray-400 text-4xl mb-3" />
+            <p className="text-gray-500 dark:text-gray-300 text-center mb-4">
+              Add another pet to your family
+            </p>
+            <Link
+              href="/pets/add"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
+            >
+              Register a Pet
+            </Link>
           </div>
-        </section>
+        </>
+      ) : (
+        <div className="col-span-3 bg-gray-50 dark:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg flex flex-col items-center justify-center p-12">
+          <FaPaw className="text-gray-400 dark:text-gray-400 text-4xl mb-3" />
+          <p className="text-gray-500 dark:text-gray-300 text-center mb-4">
+            You haven't registered any pets yet
+          </p>
+          <Link
+            href="/pets/add"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
+          >
+            Register Your First Pet
+          </Link>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
 
         {/* Reviews Section */}
         <section className="py-12 bg-gray-100 dark:bg-gray-800">
